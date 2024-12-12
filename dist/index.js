@@ -9557,7 +9557,7 @@ const verifyCommit = (sha) => __awaiter(void 0, void 0, void 0, function* () {
             const cmd = `git log --format=format:%H`;
             core.info(`Getting list of SHAs in repo via command "${cmd}"`);
             const { stdout } = yield execAsync(cmd);
-            repoShas = stdout.trim().split('\n');
+            repoShas = stdout.trim().split("\n");
         }
         catch (e) {
             repoShas = [];
@@ -9577,13 +9577,17 @@ function run() {
                 branch: core.getInput("branch"),
                 workflow: core.getInput("workflow"),
                 job: core.getInput("job"),
-                verify: core.getInput("verify") === "true" ? true : false
+                verify: core.getInput("verify") === "true" ? true : false,
+                repo: core.getInput("repo"),
             };
             const octokit = github.getOctokit(inputs.token);
-            const repository = process.env.GITHUB_REPOSITORY;
+            const repository = inputs.repo;
             const [owner, repo] = repository.split("/");
-            const workflows = yield octokit.rest.actions.listRepoWorkflows({ owner, repo });
-            const workflowId = (_a = workflows.data.workflows.find(w => w.name.toLowerCase() === inputs.workflow.toLowerCase())) === null || _a === void 0 ? void 0 : _a.id;
+            const workflows = yield octokit.rest.actions.listRepoWorkflows({
+                owner,
+                repo,
+            });
+            const workflowId = (_a = workflows.data.workflows.find((w) => w.name.toLowerCase() === inputs.workflow.toLowerCase())) === null || _a === void 0 ? void 0 : _a.id;
             if (!workflowId) {
                 core.setFailed(`No workflow exists with the name "${inputs.workflow}"`);
                 return;
@@ -9591,9 +9595,15 @@ function run() {
             else {
                 core.info(`Discovered workflowId for search: ${workflowId}`);
             }
-            const response = yield octokit.rest.actions.listWorkflowRuns({ owner, repo, workflow_id: workflowId, per_page: 100 });
+            const response = yield octokit.rest.actions.listWorkflowRuns({
+                owner,
+                repo,
+                workflow_id: workflowId,
+                per_page: 100,
+            });
             const runs = response.data.workflow_runs
-                .filter(x => (!inputs.branch || x.head_branch === inputs.branch) && (inputs.job || x.conclusion === "success"))
+                .filter((x) => (!inputs.branch || x.head_branch === inputs.branch) &&
+                (inputs.job || x.conclusion === "success"))
                 .sort((r1, r2) => new Date(r2.created_at).getTime() - new Date(r1.created_at).getTime());
             let triggeringSha = process.env.GITHUB_SHA;
             let sha = undefined;
@@ -9613,7 +9623,11 @@ function run() {
                         continue;
                     }
                     if (inputs.job) {
-                        const jobs = yield octokit.rest.actions.listJobsForWorkflowRun({ owner, repo, run_id: run.id });
+                        const jobs = yield octokit.rest.actions.listJobsForWorkflowRun({
+                            owner,
+                            repo,
+                            run_id: run.id,
+                        });
                         let foundJob = false;
                         for (const job of jobs.data.jobs) {
                             if (job.name === inputs.job) {
@@ -9641,7 +9655,7 @@ function run() {
                 core.warning(`Unable to determine SHA of last successful commit (possibly outside the window of ${runs.length} runs). Using earliest SHA available.`);
                 sha = lastSha;
             }
-            core.setOutput('sha', sha);
+            core.setOutput("sha", sha);
         }
         catch (error) {
             core.setFailed(error === null || error === void 0 ? void 0 : error.message);
