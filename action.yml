@@ -22,6 +22,9 @@ inputs:
   repo:
     description: 'Repository to look for the workflow in.'
     required: true
+outputs:
+  lastSuccessfulBuildSha:
+    description: 'SHA of the last successful workflow run.'
 runs:
   using: 'node16'
   main: 'dist/index.js'
