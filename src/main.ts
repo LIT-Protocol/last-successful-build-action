@@ -138,7 +138,7 @@ async function run(): Promise<void> {
       sha = lastSha;
     }
 
-    core.setOutput("sha", sha);
+    core.setOutput("lastSuccessfulBuildSha", sha);
   } catch (error: any) {
     core.setFailed(error?.message);
   }
