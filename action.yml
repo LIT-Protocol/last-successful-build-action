@@ -19,6 +19,9 @@ inputs:
     description: 'Verify SHA of workflow run commit against list of commit SHAs in repository'
     required: false
     default: 'false'
+  repo:
+    description: 'Repository to look for the workflow in.'
+    required: true
 runs:
   using: 'node16'
   main: 'dist/index.js'
