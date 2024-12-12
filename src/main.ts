@@ -76,14 +76,13 @@ async function run(): Promise<void> {
           new Date(r2.created_at).getTime() - new Date(r1.created_at).getTime()
       );
 
-    let triggeringSha = process.env.GITHUB_SHA as string;
+    let lastSha: string | undefined = undefined;
     let sha: string | undefined = undefined;
-    let lastSha: string | undefined;
 
+    core.debug(`Found ${runs.length} runs`);
     if (runs.length > 0) {
       for (const run of runs) {
         lastSha = run.head_sha;
-        core.debug(`This SHA: ${triggeringSha}`);
         core.debug(`Run SHA: ${run.head_sha}`);
         core.debug(`Run Branch: ${run.head_branch}`);
         core.debug(`Wanted branch: ${inputs.branch}`);
@@ -106,6 +105,7 @@ async function run(): Promise<void> {
 
           let foundJob = false;
           for (const job of jobs.data.jobs) {
+            core.debug(`Checking job: ${job}`);
             if (job.name === inputs.job) {
               if (job.conclusion === "success") {
                 foundJob = true;
