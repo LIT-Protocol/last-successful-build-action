@@ -9605,13 +9605,12 @@ function run() {
                 .filter((x) => (!inputs.branch || x.head_branch === inputs.branch) &&
                 (inputs.job || x.conclusion === "success"))
                 .sort((r1, r2) => new Date(r2.created_at).getTime() - new Date(r1.created_at).getTime());
-            let triggeringSha = process.env.GITHUB_SHA;
+            let lastSha = undefined;
             let sha = undefined;
-            let lastSha;
+            core.debug(`Found ${runs.length} runs`);
             if (runs.length > 0) {
                 for (const run of runs) {
                     lastSha = run.head_sha;
-                    core.debug(`This SHA: ${triggeringSha}`);
                     core.debug(`Run SHA: ${run.head_sha}`);
                     core.debug(`Run Branch: ${run.head_branch}`);
                     core.debug(`Wanted branch: ${inputs.branch}`);
@@ -9630,6 +9629,7 @@ function run() {
                         });
                         let foundJob = false;
                         for (const job of jobs.data.jobs) {
+                            core.debug(`Checking job: ${job}`);
                             if (job.name === inputs.job) {
                                 if (job.conclusion === "success") {
                                     foundJob = true;
@@ -9655,7 +9655,7 @@ function run() {
                 core.warning(`Unable to determine SHA of last successful commit (possibly outside the window of ${runs.length} runs). Using earliest SHA available.`);
                 sha = lastSha;
             }
-            core.setOutput("sha", sha);
+            core.setOutput("lastSuccessfulBuildSha", sha);
         }
         catch (error) {
             core.setFailed(error === null || error === void 0 ? void 0 : error.message);
